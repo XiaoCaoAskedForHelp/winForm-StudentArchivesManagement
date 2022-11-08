@@ -1,0 +1,183 @@
+﻿create database 学生档案管理系统
+go
+use 学生档案管理系统
+go
+
+create table 学生信息(
+学号 varchar(20) not null,
+姓名 nvarchar(20) not null,
+密码 varchar(50) not null,
+性别 char(2) not null,
+出生年月 date not null,
+籍贯 varchar(255) not null,
+生源所在地 varchar(255) not null,
+照片 image not null,
+constraint pk_读者信息 primary key(学号) 
+)
+go
+
+create table 地区(
+编号 int not null,
+省份 nvarchar(50) not null,
+城市 nvarchar(50) not null, 
+constraint pk_地区 primary key (编号)
+)
+go
+
+INSERT 地区 VALUES (1, N'河北省', N'邯郸')
+INSERT 地区 VALUES (3, N'河北省', N'石家庄')
+INSERT 地区 VALUES (4, N'河北省', N'沧州')
+INSERT 地区 VALUES (5, N'河北省', N'保定')
+INSERT 地区 VALUES (6, N'河北省', N'秦皇岛')
+INSERT 地区 VALUES (7, N'河北省', N'张家口')
+INSERT 地区 VALUES (8, N'河北省', N'承德')
+INSERT 地区 VALUES (9, N'江苏省', N'南京')
+INSERT 地区 VALUES (10, N'江苏省', N'苏州')
+INSERT 地区 VALUES (11, N'江苏省', N'常州')
+INSERT 地区 VALUES (13, N'江苏省', N'扬州')
+INSERT 地区 VALUES (14, N'江苏省', N'徐州')
+INSERT 地区 VALUES (15, N'江苏省', N'无锡')
+INSERT 地区 VALUES (16, N'江苏省', N'南通')
+INSERT 地区 VALUES (17, N'辽宁省', N'大连')
+INSERT 地区 VALUES (18, N'辽宁省', N'沈阳')
+INSERT 地区 VALUES (19, N'辽宁省', N'丹东')
+INSERT 地区 VALUES (20, N'辽宁省', N'锦州')
+GO
+
+create table 院系(
+编号 int not null,
+院系名称 nvarchar(50) not null,
+专业名称 nvarchar(50) not null, 
+constraint pk_院系 primary key (编号)
+)
+go
+select 学籍信息.*,学生信息.姓名,院系.*,班级.班级名称 from 学籍信息,学生信息,院系,班级 
+where 学籍信息.学号=学生信息.学号 and 学籍信息.院系编号=院系.编号 and 学籍信息.班级编号=班级.班级编号  
+
+--N将后面解释为unicode字符
+insert 院系 values(1,N'信息科学与工程学院','计算机科学与技术')
+insert 院系 values(2,N'信息科学与工程学院','网络工程')
+insert 院系 values(3,N'信息科学与工程学院','自动化')
+insert 院系 values(4,N'信息科学与工程学院','通信工程')
+insert 院系 values(5,N'信息科学与工程学院','电子信息工程')
+insert 院系 values(6,N'轻工与化学工程学院','环境工程')
+insert 院系 values(7,N'轻工与化学工程学院','轻化工程')
+insert 院系 values(8,N'轻工与化学工程学院','包装工程')
+insert 院系 values(9,N'轻工与化学工程学院','化学工程')
+go
+
+create table 班级(
+班级编号 int identity(1,1) not null,
+院系编号 int not null,
+班级名称 nvarchar(50) not null,
+班级描述 nvarchar(255),
+constraint pk_班级 primary key (班级编号)
+)
+go
+
+alter table 班级 add foreign key(院系编号) references 院系(编号)
+go
+
+--char是定长的，索引效率级高
+--nvarchar(n)包含 n 个字符的可变长度 Unicode 字符数据。
+--varchar(n)长度为 n 个字节的可变长度且非 Unicode 的字符数据。汉字——解决字符集这种不兼容
+create table 学籍信息(
+编号 int identity(1,1) not null,
+学号 varchar(20) not null,
+院系编号 int not null,
+班级编号 int not null,
+入学年份 date not null,
+学制 varchar(10) not null,
+年级 varchar(10) not null,
+学历 varchar(10) not null,
+学籍状态 varchar(10) not null,
+备注 nvarchar(500),
+constraint pk_学籍信息 primary key(编号)
+)
+go
+
+alter table 学籍信息 add foreign key(学号) references 学生信息(学号)
+alter table 学籍信息 add foreign key(院系编号) references 院系(编号)
+alter table 学籍信息 add foreign key(班级编号) references 班级(班级编号)
+go
+
+create table 学籍变动记录(
+编号 int identity(1,1) not null,
+学号 varchar(20) not null,
+原院系编号 int not null,
+原班级编号 int not null,
+原年级 varchar(10) not null,
+原学历 varchar(10) not null,
+原学籍状态 varchar(10) not null,
+记录时间 datetime default getdate() not null,
+详情原因 nvarchar(255) not null,
+constraint pk_学籍变动记录 primary key(编号)
+)
+go 
+
+alter table 学籍变动记录 add foreign key(学号) references 学生信息(学号)
+alter table 学籍变动记录 add foreign key(原院系编号) references 院系(编号)
+alter table 学籍变动记录 add foreign key(原班级编号) references 班级(班级编号)
+go
+
+create table 奖励记录(
+编号 int identity(1,1) not null,
+学号 varchar(20) not null,
+奖励名称 varchar(20) not null,
+类型编号 int not null,
+记录时间 datetime default getdate() not null,
+详情原因 nvarchar(255) not null,
+constraint pk_奖励记录 primary key(编号)
+)
+go
+
+create table 惩罚记录(
+编号 int identity(1,1) not null,
+学号 varchar(20) not null,
+惩罚名称 varchar(20) not null,
+类型编号 int not null,
+记录时间 datetime default getdate() not null,
+详情原因 nvarchar(255) not null,
+constraint pk_惩罚记录 primary key(编号)
+)
+go
+
+create table 惩罚类型(
+编号 int not null,
+惩罚类型 varchar(20)
+constraint pk_惩罚类型 primary key (编号)
+)
+go
+
+insert 惩罚类型 values(1,N'出分')
+insert 惩罚类型 values(2,N'开除学籍')
+insert 惩罚类型 values(3,N'警告')
+go
+
+create table 奖励类型(
+编号 int not null,
+奖励类型 varchar(20)
+constraint pk_奖励类别 primary key (编号)
+)
+go
+
+insert 奖励类型 values(1,N'奖学金')
+insert 奖励类型 values(2,N'荣誉称号')
+insert 奖励类型 values(3,N'好人好事')
+go
+
+alter table 奖励记录 add foreign key(编号) references 奖励类型(编号)
+alter table 惩罚记录 add foreign key(编号) references 惩罚类型(编号)
+alter table 惩罚记录 add foreign key(学号) references 学生信息(学号)
+alter table 奖励记录 add foreign key(学号) references 学生信息(学号)
+go
+
+create table 管理员(
+账号 varchar(20) not null,
+姓名 nvarchar(20) not null,
+密码 varchar(50) not null,
+constraint pk_管理员 primary key(账号) 
+)
+go
+insert into 管理员 values ('admin',N'系统管理员','123456')
+go
